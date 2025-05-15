@@ -6,14 +6,17 @@ import { AppContext } from "../context/AppContext";
 import { toast } from "react-toastify";
 
 const EmailVerify = () => {
-  axios.defaults.withCredentials = true;
-
-  const { backendUrl, isLoggedin, userData, getUserData } =
-    useContext(AppContext);
+  const { backendUrl, isLoggedin, userData, getUserData } = useContext(AppContext);
 
   const inputRefs = useRef([]);
   const [otp, setOtp] = useState(new Array(6).fill(""));
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const buildUrl = (path) => {
+    const cleanBase = backendUrl.replace(/\/+$/, "");
+    return `${cleanBase}${path.startsWith("/") ? path : `/${path}`}`;
+  };
 
   const handleInput = (e, index) => {
     const value = e.target.value;
@@ -22,7 +25,6 @@ const EmailVerify = () => {
       newOtp[index] = value;
       setOtp(newOtp);
 
-      // Move to next input
       if (value !== "" && index < 5) {
         inputRefs.current[index + 1].focus();
       }
@@ -45,47 +47,57 @@ const EmailVerify = () => {
 
   const handlePaste = (e) => {
     e.preventDefault();
-    const paste = e.clipboardData.getData("text").slice(0, 6);
+    let paste = e.clipboardData.getData("text").slice(0, 6);
+    paste = paste.replace(/\D/g, ""); // Remove non-digits
+
     const pasteArray = paste.split("");
     const newOtp = [...otp];
 
     pasteArray.forEach((char, i) => {
-      if (/^[0-9]$/.test(char) && inputRefs.current[i]) {
+      if (inputRefs.current[i]) {
         newOtp[i] = char;
       }
     });
 
     setOtp(newOtp);
 
-    // Move focus to next empty input
     const nextEmptyIndex = pasteArray.length < 6 ? pasteArray.length : 5;
     inputRefs.current[nextEmptyIndex]?.focus();
   };
 
   const onSubmitHandler = async (e) => {
+    e.preventDefault();
+    if (otp.includes("") || otp.length !== 6) {
+      toast.error("Please enter the full 6-digit OTP.");
+      return;
+    }
+    setLoading(true);
     try {
-      e.preventDefault();
-      const otpArray = inputRefs.current.map((e) => e.value);
-      const otp = otpArray.join("");
+      const otpString = otp.join("");
       const { data } = await axios.post(
-        backendUrl + "/api/auth/verify-account",
-        { otp }
+        buildUrl("/api/auth/verify-account"),
+        { otp: otpString },
+        { withCredentials: true }
       );
       if (data.success) {
         toast.success(data.message);
-        getUserData();
+        await getUserData();
         navigate("/");
       } else {
         toast.error(data.message);
       }
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.response?.data?.message || error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    isLoggedin && userData && userData.isAccountVerified && navigate("/");
-  }, [isLoggedin, userData]);
+    if (isLoggedin && userData && userData.isAccountVerified) {
+      navigate("/");
+    }
+  }, [isLoggedin, userData, navigate]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-200 to-purple-200">
@@ -115,12 +127,24 @@ const EmailVerify = () => {
               onChange={(e) => handleInput(e, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
               className="w-12 h-12 bg-[#333A5C] text-white text-center text-xl rounded-md"
+              aria-label={`OTP Digit ${index + 1}`}
+              autoFocus={index === 0}
+              inputMode="numeric"
+              pattern="[0-9]*"
             />
           ))}
         </div>
 
-        <button className="w-full py-3 bg-gradient-to-r from-indigo-500 to-indigo-700 rounded-full cursor-pointer text-white">
-          Verify Email
+        <button
+          type="submit"
+          disabled={loading}
+          className={`w-full py-3 rounded-full cursor-pointer text-white ${
+            loading
+              ? "bg-indigo-300 cursor-not-allowed"
+              : "bg-gradient-to-r from-indigo-500 to-indigo-700 hover:brightness-110"
+          }`}
+        >
+          {loading ? "Verifying..." : "Verify Email"}
         </button>
       </form>
     </div>
