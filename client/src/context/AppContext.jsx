@@ -19,19 +19,23 @@ export const AppContextProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
 
   // Helper to safely build API URLs
-  const buildUrl = (path) => {
-    try {
-      // Remove trailing slash from backendUrl if present
-      const cleanBase = backendUrl.replace(/\/+$/, "");
-      return `${cleanBase}${path.startsWith("/") ? path : `/${path}`}`;
-    } catch (e) {
-      console.error("❌ Failed to build URL:", e.message);
-      return "";
-    }
+ const buildUrl = (path) => {
+  try {
+    // Remove trailing slash from backendUrl if present
+    const cleanBase = backendUrl.replace(/\/+$/, "");
+    const fullUrl = `${cleanBase}${path.startsWith("/") ? path : `/${path}`}`;
+    
+    console.log("🛠 Final API URL:", fullUrl); // ✅ This will now execute
+    
+    return fullUrl;
+  } catch (e) {
+    console.error("❌ Failed to build URL:", e.message);
+    return "";
+  }
+};
 
-  };
 
-  console.log("🛠 Final API URL:", `${cleanBase}${path.startsWith("/") ? path : `/${path}`}`);
+ 
 
 
   // Check if user is authenticated
