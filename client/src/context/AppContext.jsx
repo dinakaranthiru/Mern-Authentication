@@ -28,7 +28,11 @@ export const AppContextProvider = ({ children }) => {
       console.error("❌ Failed to build URL:", e.message);
       return "";
     }
+
   };
+
+  console.log("🛠 Final API URL:", `${cleanBase}${path.startsWith("/") ? path : `/${path}`}`);
+
 
   // Check if user is authenticated
   const getAuthState = async () => {
