@@ -18,25 +18,20 @@ export const AppContextProvider = ({ children }) => {
   const [isLoggedin, setIsLoggedin] = useState(false);
   const [userData, setUserData] = useState(null);
 
-  // Helper to safely build API URLs
+ const cleanEnvUrl = import.meta.env.VITE_BACKEND_URL?.trim().replace(/^['"]|['"]$/g, "");
+console.log("🔧 Cleaned Backend URL:", cleanEnvUrl);
+
 const buildUrl = (path) => {
   try {
-    // Remove trailing slash from backendUrl if present
-    const cleanBase = backendUrl.replace(/\/+$/, "");
-    const fullUrl = `${cleanBase}${path.startsWith("/") ? path : `/${path}`}`;
-    
-    console.log("🛠 Final API URL:", fullUrl); // ✅ This will now execute
-    
-    return fullUrl;
+    const cleanBase = cleanEnvUrl.replace(/\/+$/, ""); // remove trailing slashes
+    const finalUrl = `${cleanBase}${path.startsWith("/") ? path : `/${path}`}`;
+    console.log("🛠 Final API URL:", finalUrl);
+    return finalUrl;
   } catch (e) {
     console.error("❌ Failed to build URL:", e.message);
     return "";
   }
 };
-
-
-
- 
 
 
   // Check if user is authenticated
