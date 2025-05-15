@@ -18,7 +18,7 @@ app.use(express.json()); //Tells Express to accept JSON data in incoming request
 
 app.use(cookieParser()); // Tells Express to handle cookies in requests and responses.
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin:"https://mern-authentication-pied.vercel.app/",
   credentials: true, // if using cookies
 })); //Allows cross-origin requests and also lets cookies work between your frontend and backend (important for authentication).
 

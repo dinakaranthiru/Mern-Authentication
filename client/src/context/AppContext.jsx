@@ -19,7 +19,7 @@ export const AppContextProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
 
   // Helper to safely build API URLs
- const buildUrl = (path) => {
+const buildUrl = (path) => {
   try {
     // Remove trailing slash from backendUrl if present
     const cleanBase = backendUrl.replace(/\/+$/, "");
@@ -33,6 +33,7 @@ export const AppContextProvider = ({ children }) => {
     return "";
   }
 };
+
 
 
  
