@@ -23,10 +23,12 @@ console.log("🔧 Cleaned Backend URL:", cleanEnvUrl);
 
 const buildUrl = (path) => {
   try {
-    const cleanBase = cleanEnvUrl.replace(/\/+$/, ""); // remove trailing slashes
-    const finalUrl = `${cleanBase}${path.startsWith("/") ? path : `/${path}`}`;
-    console.log("🛠 Final API URL:", finalUrl);
-    return finalUrl;
+    // Remove trailing slash from env variable
+    const cleanBase = backendUrl?.replace(/\/+$/, "");
+    const cleanPath = path.startsWith("/") ? path : `/${path}`;
+    const fullUrl = `${cleanBase}${cleanPath}`;
+    console.log("🛠 Final API URL:", fullUrl);
+    return fullUrl;
   } catch (e) {
     console.error("❌ Failed to build URL:", e.message);
     return "";
@@ -34,10 +36,13 @@ const buildUrl = (path) => {
 };
 
 
+
   // Check if user is authenticated
   const getAuthState = async () => {
     try {
-      const { data } = await axios.get(buildUrl("/api/auth/is-auth"));
+      const { data } = await axios.get(buildUrl("/api/auth/is-auth"),{
+        withCredentials:true,
+      });
       if (data.success) {
         setIsLoggedin(true);
         getUserData();
@@ -55,7 +60,9 @@ const buildUrl = (path) => {
   // Fetch user data
   const getUserData = async () => {
     try {
-      const { data } = await axios.get(buildUrl("/api/user/data"));
+      const { data } = await axios.get(buildUrl("/api/user/data"),{
+        withCredentials:true,
+      });
       if (data.success) {
         setUserData(data.userData);
       } else {
