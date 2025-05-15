@@ -7,12 +7,10 @@ export const AppContext = createContext();
 
 // Provider component
 export const AppContextProvider = ({ children }) => {
-  // Ensure axios sends credentials (cookies, etc.)
   axios.defaults.withCredentials = true;
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-  // Safety check for missing backendUrl
   if (!backendUrl) {
     console.error("❌ VITE_BACKEND_URL is not defined in your .env file");
   }
@@ -20,12 +18,14 @@ export const AppContextProvider = ({ children }) => {
   const [isLoggedin, setIsLoggedin] = useState(false);
   const [userData, setUserData] = useState(null);
 
-  // Helper to safely construct URLs
+  // Helper to safely build API URLs
   const buildUrl = (path) => {
     try {
-      return new URL(path, backendUrl).toString();
+      // Remove trailing slash from backendUrl if present
+      const cleanBase = backendUrl.replace(/\/+$/, '');
+      return `${cleanBase}${path.startsWith("/") ? path : `/${path}`}`;
     } catch (e) {
-      console.error("❌ Invalid backend URL:", backendUrl);
+      console.error("❌ Failed to build URL:", e.message);
       return "";
     }
   };
@@ -36,7 +36,7 @@ export const AppContextProvider = ({ children }) => {
       const { data } = await axios.get(buildUrl("/api/auth/is-auth"));
       if (data.success) {
         setIsLoggedin(true);
-        getUserData(); // Fetch user data after auth success
+        getUserData();
       } else {
         setIsLoggedin(false);
       }
@@ -67,13 +67,11 @@ export const AppContextProvider = ({ children }) => {
     }
   };
 
-  // Run once when the component mounts
   useEffect(() => {
     console.log("✅ Checking auth state...");
     getAuthState();
   }, []);
 
-  // Expose values and functions to the rest of the app
   const value = {
     backendUrl,
     isLoggedin,
