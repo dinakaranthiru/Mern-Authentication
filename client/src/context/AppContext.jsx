@@ -10,20 +10,30 @@ export const AppContextProvider = ({ children }) => {
   // Ensure axios sends credentials (cookies, etc.)
   axios.defaults.withCredentials = true;
 
-  const backendUrl = import.meta.env.VITE_BACKEND_URL; // No trailing slash!
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+  // Safety check for missing backendUrl
+  if (!backendUrl) {
+    console.error("❌ VITE_BACKEND_URL is not defined in your .env file");
+  }
+
   const [isLoggedin, setIsLoggedin] = useState(false);
   const [userData, setUserData] = useState(null);
+
+  // Helper to safely construct URLs
+  const buildUrl = (path) => {
+    try {
+      return new URL(path, backendUrl).toString();
+    } catch (e) {
+      console.error("❌ Invalid backend URL:", backendUrl);
+      return "";
+    }
+  };
 
   // Check if user is authenticated
   const getAuthState = async () => {
     try {
-      const { data } = await axios.get(
-        new URL("/api/auth/is-auth", backendUrl).toString(),
-        {
-          withCredentials: true,
-        }
-      );
-
+      const { data } = await axios.get(buildUrl("/api/auth/is-auth"));
       if (data.success) {
         setIsLoggedin(true);
         getUserData(); // Fetch user data after auth success
@@ -41,13 +51,7 @@ export const AppContextProvider = ({ children }) => {
   // Fetch user data
   const getUserData = async () => {
     try {
-      const { data } = await axios.get(
-        new URL("/api/user/data", backendUrl).toString(),
-        {
-          withCredentials: true,
-        }
-      );
-
+      const { data } = await axios.get(buildUrl("/api/user/data"));
       if (data.success) {
         setUserData(data.userData);
       } else {
@@ -65,7 +69,7 @@ export const AppContextProvider = ({ children }) => {
 
   // Run once when the component mounts
   useEffect(() => {
-    console.log("Checking auth state...");
+    console.log("✅ Checking auth state...");
     getAuthState();
   }, []);
 
