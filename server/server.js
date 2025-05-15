@@ -12,15 +12,15 @@ const port = process.env.PORT || 4000; //Picks the port number: From .env if set
 
 connectDB(); //Connects your app to MongoDB by calling the connectDB() function you wrote earlier.
 
+
+
 app.use(express.json()); //Tells Express to accept JSON data in incoming requests (like from a frontend form).
 
 app.use(cookieParser()); // Tells Express to handle cookies in requests and responses.
-app.use(
-  cors({
-    origin: "https://mern-authentication-pied.vercel.app",
-    credentials: true, // if using cookies
-  })
-); //Allows cross-origin requests and also lets cookies work between your frontend and backend (important for authentication).
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true, // if using cookies
+})); //Allows cross-origin requests and also lets cookies work between your frontend and backend (important for authentication).
 
 app.get("/", (req, res) => res.send("API Working")); //Creates a test route: When someone visits /, it responds with "API Working".
 app.use("/api/auth", authRoute);
