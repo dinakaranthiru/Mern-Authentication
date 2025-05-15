@@ -8,41 +8,41 @@ import { toast } from "react-toastify";
 const Navbar = () => {
   const navigate = useNavigate();
 
-  const { userData, backendUrl, setUserData, setIsLoggedin } =
-    useContext(AppContext);
+  const { userData, backendUrl, setUserData, setIsLoggedin } = useContext(AppContext);
 
-    const sendVerificationOtp = async () => {
-      try {
-        axios.defaults.withCredentials=true;
+  // Helper to safely build backend URLs
+  const buildUrl = (path) => {
+    const cleanBase = backendUrl.replace(/\/+$/, "");
+    return `${cleanBase}${path.startsWith("/") ? path : `/${path}`}`;
+  };
 
-        const {data} = await axios.post(backendUrl + '/api/auth/send-verify-otp',{
-          withCredentials:true
-        });
-        if(data.success){
-          navigate('/email-verify');
-          toast.success(data.message);
-        }else{
-          toast.error(data.message);
-        }
-      } catch (error) {
-        toast.error(error.message) 
+  const sendVerificationOtp = async () => {
+    try {
+      const { data } = await axios.post(buildUrl("/api/auth/send-verify-otp"), {}, { withCredentials: true });
+      if (data.success) {
+        navigate("/email-verify");
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
       }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
     }
+  };
 
-    const logout = async () => {
-      try {
-        axios.defaults.withCredentials =true;
-        const {data} = await axios.post(backendUrl + '/api/auth/logout',{
-          withCredentials:true
-        });
-        data.success && setIsLoggedin(false);
-        data.success && setUserData(false);
-        navigate('/');
-      } catch (error) {
-
-        toast.error(error.message);
+  const logout = async () => {
+    try {
+      const { data } = await axios.post(buildUrl("/api/auth/logout"), {}, { withCredentials: true });
+      if (data.success) {
+        setIsLoggedin(false);
+        setUserData(null);
+        navigate("/");
       }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
     }
+  };
+
   return (
     <div className="w-full flex justify-between items-center p-4 sm:p-6 sm:px-24 absolute top-0">
       <img src={assets.logo} alt="logo" className="w-28 sm:w-32" />
@@ -52,12 +52,18 @@ const Navbar = () => {
           <div className="absolute hidden group-hover:block top-0 right-0 z-10 text-black rounded pt-10 ">
             <ul className="list-none m-0 p-2 bg-gray-100 text-sm">
               {!userData.isAccountVerified && (
-                <li onClick={sendVerificationOtp} className="py-1 px-2 hover:bg-gray-200 cursor-pointer">
+                <li
+                  onClick={sendVerificationOtp}
+                  className="py-1 px-2 hover:bg-gray-200 cursor-pointer"
+                >
                   Verify Email
                 </li>
               )}
 
-              <li onClick={logout} className="py-1 px-2 hover:bg-gray-200 cursor-pointer pr-10">
+              <li
+                onClick={logout}
+                className="py-1 px-2 hover:bg-gray-200 cursor-pointer pr-10"
+              >
                 Logout
               </li>
             </ul>
