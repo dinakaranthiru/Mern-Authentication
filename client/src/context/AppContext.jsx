@@ -10,7 +10,7 @@ export const AppContextProvider = ({ children }) => {
   axios.defaults.withCredentials = true;
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
-
+  console.log("Backend URL", backendUrl);
   if (!backendUrl) {
     console.error("❌ VITE_BACKEND_URL is not defined in your .env file");
   }
@@ -22,7 +22,7 @@ export const AppContextProvider = ({ children }) => {
   const buildUrl = (path) => {
     try {
       // Remove trailing slash from backendUrl if present
-      const cleanBase = backendUrl.replace(/\/+$/, '');
+      const cleanBase = backendUrl.replace(/\/+$/, "");
       return `${cleanBase}${path.startsWith("/") ? path : `/${path}`}`;
     } catch (e) {
       console.error("❌ Failed to build URL:", e.message);
