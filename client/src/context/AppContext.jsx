@@ -24,7 +24,7 @@ console.log("🔧 Cleaned Backend URL:", cleanEnvUrl);
 const buildUrl = (path) => {
   try {
     // Remove trailing slash from env variable
-    const cleanBase = backendUrl?.replace(/\/+$/, "");
+    const cleanBase = cleanEnvUrl?.replace(/\/+$/, "");
     const cleanPath = path.startsWith("/") ? path : `/${path}`;
     const fullUrl = `${cleanBase}${cleanPath}`;
     console.log("🛠 Final API URL:", fullUrl);
