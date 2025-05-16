@@ -6,24 +6,44 @@ import connectDB from "./config/mongodb.js";
 import authRoute from "./routes/authRoute.js";
 import userRouter from "./routes/userRoutes.js";
 
-const app = express(); //Creates an Express app. This is your backend server.
+const app = express();
+const port = process.env.PORT || 4000;
 
-const port = process.env.PORT || 4000; //Picks the port number: From .env if set (like 5000) Or uses 4000 by default
+// Connect to MongoDB
+connectDB();
 
-connectDB(); //Connects your app to MongoDB by calling the connectDB() function you wrote earlier.
+// ✅ CORS Configuration for localhost and production
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://mern-authentication-pied.vercel.app"
+];
 
-app.use(
-  cors({
-    origin: "https://mern-authentication-pied.vercel.app",
-    credentials: true, // if using cookies
-  })
-); //Allows cross-origin requests and also lets cookies work between your frontend and backend (important for authentication).
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (e.g., mobile apps, curl)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true // 🔒 Needed to send/receive cookies
+}));
 
-app.use(express.json()); //Tells Express to accept JSON data in incoming requests (like from a frontend form).
+// Middleware
+app.use(express.json());
+app.use(cookieParser());
 
-app.use(cookieParser()); // Tells Express to handle cookies in requests and responses.
-app.get("/", (req, res) => res.send("API Working")); //Creates a test route: When someone visits /, it responds with "API Working".
+// Debug logging (optional, helps during development)
+app.use((req, res, next) => {
+  console.log("🔍 Request Origin:", req.headers.origin);
+  next();
+});
+
+// Routes
+app.get("/", (req, res) => res.send("✅ API Working"));
 app.use("/api/auth", authRoute);
 app.use("/api/user", userRouter);
 
-app.listen(port, () => console.log(`Server Started on PORT: ${port}`)); //Starts the server, and shows a message.
+// Start server
+app.listen(port, () => console.log(`🚀 Server Started on PORT: ${port}`));
