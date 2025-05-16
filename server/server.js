@@ -6,7 +6,7 @@ import connectDB from "./config/mongodb.js";
 import authRoute from "./routes/authRoute.js";
 import userRouter from "./routes/userRoutes.js";
 
-const app = express(); // Creates an Express app. This is your backend server.
+const app = express(); //Creates an Express app. This is your backend server.
 
 const port = process.env.PORT || 4000; //Picks the port number: From .env if set (like 5000) Or uses 4000 by default
 
