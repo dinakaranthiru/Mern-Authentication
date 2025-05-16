@@ -30,7 +30,6 @@ export const AppContextProvider = ({ children }) => {
       const cleanBase = cleanEnvUrl?.replace(/\/+$/, "");
 
       console.log("🛠 Final API URL:", cleanBase);
-      return fullUrl;
     } catch (e) {
       console.error("❌ Failed to build URL:", e.message);
       return "";
