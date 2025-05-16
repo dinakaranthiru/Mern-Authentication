@@ -7,18 +7,30 @@ import { toast } from "react-toastify";
 
 const Navbar = () => {
   const navigate = useNavigate();
-
   const { userData, backendUrl, setUserData, setIsLoggedin } = useContext(AppContext);
+
+  // Clean and validate backend URL from .env
+  const cleanedBackendUrl = backendUrl?.trim().replace(/^['"]|['"]$/g, "").replace(/\/+$/, "");
 
   // Helper to safely build backend URLs
   const buildUrl = (path) => {
-    const cleanBase = backendUrl.replace(/\/+$/, "");
-    return `${cleanBase}${path.startsWith("/") ? path : `/${path}`}`;
+    const finalUrl = `${cleanedBackendUrl}${path.startsWith("/") ? path : `/${path}`}`;
+    console.log("🔧 Final API URL:", finalUrl);
+    return finalUrl;
   };
 
   const sendVerificationOtp = async () => {
+    if (!cleanedBackendUrl) {
+      toast.error("Backend URL is not defined!");
+      return;
+    }
+
     try {
-      const { data } = await axios.post(buildUrl("/api/auth/send-verify-otp"), {}, { withCredentials: true });
+      const { data } = await axios.post(
+        buildUrl("/api/auth/send-verify-otp"),
+        {},
+        { withCredentials: true }
+      );
       if (data.success) {
         navigate("/email-verify");
         toast.success(data.message);
@@ -31,8 +43,17 @@ const Navbar = () => {
   };
 
   const logout = async () => {
+    if (!cleanedBackendUrl) {
+      toast.error("Backend URL is not defined!");
+      return;
+    }
+
     try {
-      const { data } = await axios.post(buildUrl("/api/auth/logout"), {}, { withCredentials: true });
+      const { data } = await axios.post(
+        buildUrl("/api/auth/logout"),
+        {},
+        { withCredentials: true }
+      );
       if (data.success) {
         setIsLoggedin(false);
         setUserData(null);
@@ -40,6 +61,9 @@ const Navbar = () => {
       }
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
+      setIsLoggedin(false); // optional fallback
+      setUserData(null);
+      navigate("/");
     }
   };
 
@@ -47,9 +71,9 @@ const Navbar = () => {
     <div className="w-full flex justify-between items-center p-4 sm:p-6 sm:px-24 absolute top-0">
       <img src={assets.logo} alt="logo" className="w-28 sm:w-32" />
       {userData ? (
-        <div className="w-8 h-8 flex justify-center items-center rounded-full bg-black text-white relative group">
+        <div className="w-8 h-8 flex justify-center items-center rounded-full bg-black text-white relative group cursor-pointer">
           {userData.name[0].toUpperCase()}
-          <div className="absolute hidden group-hover:block top-0 right-0 z-10 text-black rounded pt-10 ">
+          <div className="absolute hidden group-hover:block top-0 right-0 z-10 text-black rounded pt-10">
             <ul className="list-none m-0 p-2 bg-gray-100 text-sm">
               {!userData.isAccountVerified && (
                 <li
@@ -59,7 +83,6 @@ const Navbar = () => {
                   Verify Email
                 </li>
               )}
-
               <li
                 onClick={logout}
                 className="py-1 px-2 hover:bg-gray-200 cursor-pointer pr-10"
