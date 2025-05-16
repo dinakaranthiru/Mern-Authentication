@@ -18,30 +18,30 @@ export const AppContextProvider = ({ children }) => {
   const [isLoggedin, setIsLoggedin] = useState(false);
   const [userData, setUserData] = useState(null);
 
- const cleanEnvUrl = import.meta.env.VITE_BACKEND_URL?.trim().replace(/^['"]|['"]$/g, "");
-console.log("🔧 Cleaned Backend URL:", cleanEnvUrl);
+  const cleanEnvUrl = import.meta.env.VITE_BACKEND_URL?.trim().replace(
+    /^['"]|['"]$/g,
+    ""
+  );
+  console.log("🔧 Cleaned Backend URL:", cleanEnvUrl);
 
-const buildUrl = (path) => {
-  try {
-    // Remove trailing slash from env variable
-    const cleanBase = cleanEnvUrl?.replace(/\/+$/, "");
-    const cleanPath = path.startsWith("/") ? path : `/${path}`;
-    const fullUrl = `${cleanBase}${cleanPath}`;
-    console.log("🛠 Final API URL:", fullUrl);
-    return fullUrl;
-  } catch (e) {
-    console.error("❌ Failed to build URL:", e.message);
-    return "";
-  }
-};
+  const buildUrl = () => {
+    try {
+      // Remove trailing slash from env variable
+      const cleanBase = cleanEnvUrl?.replace(/\/+$/, "");
 
-
+      console.log("🛠 Final API URL:", cleanBase);
+      return fullUrl;
+    } catch (e) {
+      console.error("❌ Failed to build URL:", e.message);
+      return "";
+    }
+  };
 
   // Check if user is authenticated
   const getAuthState = async () => {
     try {
-      const { data } = await axios.get(buildUrl("/api/auth/is-auth"),{
-        withCredentials:true,
+      const { data } = await axios.get(buildUrl("/api/auth/is-auth"), {
+        withCredentials: true,
       });
       if (data.success) {
         setIsLoggedin(true);
@@ -60,8 +60,8 @@ const buildUrl = (path) => {
   // Fetch user data
   const getUserData = async () => {
     try {
-      const { data } = await axios.get(buildUrl("/api/user/data"),{
-        withCredentials:true,
+      const { data } = await axios.get(buildUrl("/api/user/data"), {
+        withCredentials: true,
       });
       if (data.success) {
         setUserData(data.userData);
